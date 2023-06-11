@@ -18,10 +18,13 @@ if (($settings.DataPath -eq $null) -or ($settings.BackupTo -eq $null) -or !(Test
 	return
 }
 
+$settings.TTSReminder = [System.Convert]::ToBoolean($settings.TTSReminder)
+$settings.SaveInterval = [int]$settings.SaveInterval
+
 $State = 0
 $SaveLastModified = (Get-Item $settings.DataPath).LastWriteTime
 
-if ([boolean]$settings.TTSReminder) {
+if ($settings.TTSReminder) {
 	$script:voice = New-Object -ComObject Sapi.spvoice
 	$script:voice.rate = 0
 }
@@ -36,7 +39,7 @@ function Backup {
 
 	if ($SaveLastModified -eq $NewLastModified) {
 		Write-Output "Data has not been saved since last backup, remember to /reload!"
-		if ([boolean]$settings.TTSReminder) {
+		if ($settings.TTSReminder) {
 			$script:voice.speak($settings.TTSMessage) > $nul
 		}
 		return
@@ -62,7 +65,7 @@ while ($true) {					 										# Loop
 	}
 
 	:outer while ($State -eq 1) {
-		for ($num = 1 ; $num -le ([int]$settings.SaveInterval * 6) ; $num++) {				# Sleep for the backup interval, but check for wow closing every 10 seconds
+		for ($num = 1 ; $num -le ($settings.SaveInterval * 6) ; $num++) {				# Sleep for the backup interval, but check for wow closing every 10 seconds
 			Start-Sleep -Seconds (10)
 			$Procs = Get-Process WowClassic -ErrorAction SilentlyContinue   # Find classic wow instance to see if it has been closed
 			if (($procs).Count -eq 0) {   									
