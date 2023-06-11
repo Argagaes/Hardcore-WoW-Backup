@@ -1,0 +1,8 @@
+[General]
+SaveInterval=30
+TTSReminder=True
+TTSMessage=Remember to reload
+
+[Locations]
+DataPath=D:\battlenet\Wow\World of Warcraft\_classic_era_\WTF\Account\{YOUR ACCOUNT}\Hydraxian Waterlords\Argagaes\SavedVariables\Hardcore.lua
+BackupTo=C:\Users\Argagaes\Desktop\hcbackups\
