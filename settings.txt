@@ -4,5 +4,5 @@ TTSReminder=True
 TTSMessage=Remember to reload
 
 [Locations]
-DataPath=D:\battlenet\Wow\World of Warcraft\_classic_era_\WTF\Account\{YOUR ACCOUNT}\Hydraxian Waterlords\Argagaes\SavedVariables\Hardcore.lua
+DataPath=D:\battlenet\Wow\World of Warcraft\_classic_era_\WTF\Account\{YOUR ACCOUNT}\{YOUR SERVER}\
 BackupTo=C:\Users\Argagaes\Desktop\hcbackups\
