@@ -1,4 +1,4 @@
-#Hardcore WoW backup script v1.0
+#Hardcore WoW backup script v1.1
 #Made by Argagaes at https://github.com/Argagaes/Hardcore-WoW-Backup
 
 Write-Output "Starting Hardcore WoW backup script v1.0 by Argagaes (@argagaes on Discord)"
@@ -13,7 +13,7 @@ Get-Content ".\settings.txt" | foreach-object -begin {$settings=@{}} -process { 
 if (($settings.DataPath -eq $null) -or ($settings.BackupTo -eq $null) -or !(Test-Path -Path $settings.DataPath)) {
 	Write-Output "Set data and backup paths into settings.txt!"
 	Write-Output "Example entries (WILL NOT WORK DIRECTLY, PLEASE FIND THE CORRECT PATHS FOR YOUR SETUP):"
-	Write-Output "DataPath=D:\battlenet\Wow\World of Warcraft\_classic_era_\WTF\Account\{YOUR ACCOUNT}\Hydraxian Waterlords\Argagaes\SavedVariables\Hardcore.lua"
+	Write-Output "DataPath=D:\battlenet\Wow\World of Warcraft\_classic_era_\WTF\Account\{YOUR ACCOUNT}\Hydraxian Waterlords\"
 	Write-Output "BackupTo=C:\Users\Argagaes\Desktop\hcbackups\"
 	return
 }
@@ -21,8 +21,17 @@ if (($settings.DataPath -eq $null) -or ($settings.BackupTo -eq $null) -or !(Test
 $settings.TTSReminder = [System.Convert]::ToBoolean($settings.TTSReminder)
 $settings.SaveInterval = [int]$settings.SaveInterval
 
+$SubDirs = Get-ChildItem -Path $settings.DataPath
+
+$script:ModifiedMap = @{}
+
+foreach ($file in $SubDirs) {
+	Write-Output ("Found character: " + $file.name)
+	$tmpFilePath = $file.fullname + "\SavedVariables\Hardcore.lua"
+	$script:ModifiedMap.add($file.name, (Get-Item $tmpFilePath).LastWriteTime)
+}
+
 $State = 0
-$SaveLastModified = (Get-Item $settings.DataPath).LastWriteTime
 
 if ($settings.TTSReminder) {
 	$script:voice = New-Object -ComObject Sapi.spvoice
@@ -35,21 +44,39 @@ if (!(Test-Path -Path $settings.BackupTo)) {
 
 function Backup {
 	Write-Output "Creating backup..."
-	$NewLastModified = (Get-Item $settings.DataPath).LastWriteTime
+	$NewDirs = Get-ChildItem -Path $settings.DataPath
+	$script:NewFound = $false
+	foreach ($file in $NewDirs) {
+		$tmpFilePath = $file.fullname + "\SavedVariables\Hardcore.lua"
 
-	if ($SaveLastModified -eq $NewLastModified) {
+		if ($script:ModifiedMap[$file.name] -eq $null) {
+			Write-Output ("Found a new character: " + $file.name)
+			$script:ModifiedMap.add($file.name, (Get-Item $tmpFilePath).LastWriteTime)
+		}
+
+		$NewLastModified = (Get-Item $tmpFilePath).LastWriteTime
+
+		if (!($NewLastModified -eq $script:ModifiedMap[$file.name])) {
+			Write-Output ("Created backup for " + $file.name)
+			$script:NewFound = $true
+			$OutPath = $settings.BackupTo+$file.name+"\Hardcore-"+(Get-Date).ToString("MM-dd-hh-mm")+".bak*"
+
+			if (!(Test-Path -Path ($settings.BackupTo+$file.name))) {
+				mkdir -Path $($settings.BackupTo+$file.name) -Force
+			}
+
+			xcopy $tmpFilePath $OutPath /D /S /Y /Q > nul
+			$script:ModifiedMap[$file.name] = $NewLastModified
+		}
+	}
+	
+
+	if (!$script:NewFound) {
 		Write-Output "Data has not been saved since last backup, remember to /reload!"
 		if ($settings.TTSReminder) {
 			$script:voice.speak($settings.TTSMessage) > $nul
 		}
-		return
 	}
-
-	$script:SaveLastModified = $NewLastModified
-
-	$OutPath = $settings.BackupTo+"Hardcore-"+(Get-Date).ToString("MM-dd-hh-mm")+".bak*"
-
-	xcopy $settings.DataPath $OutPath /D /S /Y /Q
 }
 
 while ($true) {					 										# Loop
