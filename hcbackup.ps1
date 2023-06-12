@@ -1,7 +1,7 @@
 #Hardcore WoW backup script v1.1
 #Made by Argagaes at https://github.com/Argagaes/Hardcore-WoW-Backup
 
-Write-Output "Starting Hardcore WoW backup script v1.0 by Argagaes (@argagaes on Discord)"
+Write-Output "Starting Hardcore WoW backup script v1.1 by Argagaes (@argagaes on Discord)"
 
 if (!(Test-Path -Path ".\settings.txt")) {
 	Write-Output "Settings.txt is missing! Example file can be found from https://github.com/Argagaes/Hardcore-WoW-Backup"
